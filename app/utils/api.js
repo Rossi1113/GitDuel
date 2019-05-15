@@ -15,6 +15,8 @@ function getRepos (username) {
   return axios.get('https://api.github.com/users/' + username + '/repos' + params + '&per_page=100');
 }
 
+
+
 function getStarCount (repos) {
   return repos.data.reduce(function (count, repo) {
     return count + repo.stargazers_count
@@ -72,5 +74,20 @@ module.exports = {
       .then(function (response) {
         return response.data.items;
       });
-  }
+  },
+  getRepo: function(username) {
+      return axios.get('https://api.github.com/users/' + username + '/repos?per_page=5&sort=updated')
+             .then(function(response) {
+                 const info = response.data.map(repo => {
+                     return{
+                         name: repo.name,
+                         url: repo.html_url
+                     };
+                 });
+                 return info;
+                 console.log(info);
+             });
+
+   },
+
 };

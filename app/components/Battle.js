@@ -2,6 +2,7 @@ var React = require('react');
 var PropTypes = require('prop-types');
 var Link = require('react-router-dom').Link;
 var PlayerPreview = require('./PlayerPreview');
+var api = require('../utils/api');
 
 // ---------------- PlayerInput ----------------
 
@@ -68,6 +69,7 @@ PlayerInput.defaultProps = {
 // ---------------- PlayerInput end ----------------
 
 
+
 // ---------------- Battle ----------------
 
 class Battle extends React.Component {
@@ -78,23 +80,30 @@ class Battle extends React.Component {
       playerTwoName: '',
       playerOneImage: null,
       playerTwoImage: null,
+      playerOneRepo: null,
+      playerTwoRepo: null,
     };
 
     this.handleSubmit = this.handleSubmit.bind(this);
   }
   handleSubmit(id, username) {
-    this.setState(function () {
-      var newState = {};
-      newState[id + 'Name'] = username;
-      newState[id + 'Image'] = 'https://github.com/' + username + '.png?size=200'
-      return newState;
-    });
+    api.getRepo(username)
+    .then(function(repo){
+        this.setState(function(){
+            var newState = {};
+            newState[id + 'Name'] = username;
+            newState[id + 'Image'] = 'https://github.com/' + username + '.png?size=200'
+            newState[id + 'Repo'] = repo
+            return newState;
+        });
+    }.bind(this));
   }
   handleReset(id) {
     this.setState(function () {
       var newState = {};
       newState[id + 'Name'] = '';
       newState[id + 'Image'] = null;
+      newState[id + 'Repo'] = null;
       return newState;
     })
   }
@@ -104,6 +113,8 @@ class Battle extends React.Component {
     var playerOneImage = this.state.playerOneImage;
     var playerTwoName = this.state.playerTwoName;
     var playerTwoImage = this.state.playerTwoImage;
+    var playerOneRepo = this.state.playerOneRepo;
+    var playerTwoRepo = this.state.playerTwoRepo;
 
     return (
       <div>
@@ -119,6 +130,17 @@ class Battle extends React.Component {
             <PlayerPreview
               avatar={playerOneImage}
               username={playerOneName}>
+              <p>Recent 5 repositories:</p>
+              <ul className='list-repo'>
+                {playerOneRepo.map(function(repo, index){
+                    return (
+                        <li key={repo.name} className='recent-repo'>
+                        <a href={repo.url} target="_blank">{repo.name}</a>
+                        </li>
+                    )
+                })}
+              </ul>
+
                 <button
                   className='reset'
                   onClick={this.handleReset.bind(this, 'playerOne')}>
@@ -137,6 +159,18 @@ class Battle extends React.Component {
             <PlayerPreview
               avatar={playerTwoImage}
               username={playerTwoName}>
+              <p>Recent 5 repositories:</p>
+              <ul className='list-repo'>
+                {playerTwoRepo.map(function(repo, index){
+                    return (
+                        <li key={repo.name} className='recent-repo'>
+                          <ul className='list-items'>
+                            <li><a href={repo.url}>{repo.name}</a></li>
+                          </ul>
+                        </li>
+                    )
+                })}
+              </ul>
                 <button
                   className='reset'
                   onClick={this.handleReset.bind(this, 'playerTwo')}>
